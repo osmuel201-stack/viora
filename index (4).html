@@ -10,15 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<style>
-/* Hero video pop-up */
-.video-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}
-.video-modal.show{display:flex}
-.video-panel{position:relative;width:100%;max-width:900px}
-.video-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:16px;overflow:hidden}
-.video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.video-close{position:absolute;top:-44px;right:0;background:none;border:0;color:#fff;font-size:2rem;line-height:1;cursor:pointer}
-</style>
 </head>
 <body>
 <div class="announcement">PureGlow Solutions • Uniquely formulated cleaning products • Proudly Ghanaian</div>
@@ -59,7 +50,7 @@
     <div class="hero-actions">
       <a class="btn btn-primary" href="#shop">Shop products</a>
       <a class="btn btn-light" href="#about">Our story</a>
-      <button class="btn btn-light" type="button" id="videoOpen">▶ Watch our video</button>
+      <a class="btn btn-light" href="https://youtu.be/DfqSStD01IE" target="_blank" rel="noopener noreferrer" aria-label="Watch the PureGlow Solutions brand and product video on YouTube">▶ Discover PureGlow — Watch Our Video</a>
     </div>
     <div class="trust-row">
       <span>✓ Ghanaian brand</span><span>✓ Home-care essentials</span><span>✓ Secure Paystack checkout</span>
@@ -230,17 +221,6 @@
   <div id="modalContent"></div>
 </div>
 
-<!-- Hero video pop-up -->
-<div class="video-modal" id="videoModal" aria-hidden="true">
-  <div class="video-panel">
-    <button class="video-close" id="videoClose" aria-label="Close video">×</button>
-    <div class="video-frame">
-      <iframe id="videoFrame" src="" title="PureGlow Solutions video"
-        allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen"
-        allowfullscreen></iframe>
-    </div>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
@@ -788,26 +768,6 @@ renderCart();
   }catch(_e){}
 })();
 
-// Hero video pop-up (YouTube: https://youtu.be/DfqSStD01IE)
-(function(){
-  const modal = document.getElementById('videoModal');
-  const frame = document.getElementById('videoFrame');
-  const VIDEO_URL = 'https://www.youtube-nocookie.com/embed/DfqSStD01IE?autoplay=1&rel=0';
-  function openVideo(){
-    frame.src = VIDEO_URL;
-    modal.classList.add('show');
-    modal.setAttribute('aria-hidden','false');
-  }
-  function closeVideo(){
-    modal.classList.remove('show');
-    modal.setAttribute('aria-hidden','true');
-    frame.src = ''; // stops playback
-  }
-  document.getElementById('videoOpen').onclick = openVideo;
-  document.getElementById('videoClose').onclick = closeVideo;
-  modal.addEventListener('click', e => { if(e.target === modal) closeVideo(); });
-  document.addEventListener('keydown', e => { if(e.key === 'Escape' && modal.classList.contains('show')) closeVideo(); });
-})();
 </script>
 </body>
 </html>
