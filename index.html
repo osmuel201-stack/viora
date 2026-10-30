@@ -50,6 +50,7 @@
     <div class="hero-actions">
       <a class="btn btn-primary" href="#shop">Shop products</a>
       <a class="btn btn-light" href="#about">Our story</a>
+      <a class="btn btn-light" href="https://youtu.be/DfqSStD01IE" target="_blank" rel="noopener noreferrer" aria-label="Watch the PureGlow Solutions brand and product video on YouTube">▶ Discover PureGlow — Watch Our Video</a>
     </div>
     <div class="trust-row">
       <span>✓ Ghanaian brand</span><span>✓ Home-care essentials</span><span>✓ Secure Paystack checkout</span>
@@ -220,6 +221,7 @@
   <div id="modalContent"></div>
 </div>
 
+
 <div class="toast" id="toast"></div>
 
 <div class="account-modal" id="accountModal" aria-hidden="true">
@@ -229,21 +231,21 @@
       <div class="account-header">
         <span class="eyebrow">PUREGLOW CUSTOMER ACCOUNT</span>
         <h2>Shop faster with your account.</h2>
-        <p>Create an account to save your name and phone number for checkout. You can still shop and pay as a guest.</p>
+        <p>Create an account to save your details for checkout. You can still shop and pay as a guest.</p>
       </div>
       <div class="account-tabs">
         <button type="button" class="account-tab active" data-account-tab="login">Log in</button>
         <button type="button" class="account-tab" data-account-tab="signup">Create account</button>
       </div>
       <form id="loginForm" class="account-form">
-        <label>Ghana phone number<input id="loginPhone" type="tel" autocomplete="tel" placeholder="024 XXX XXXX" required></label>
+        <label>Email address<input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
         <label>Password<input id="loginPassword" type="password" autocomplete="current-password" placeholder="Your password" required></label>
         <p class="account-error" id="loginError" role="alert"></p>
         <button class="btn btn-primary full" type="submit">Log in</button>
       </form>
       <form id="signupForm" class="account-form" hidden>
         <label>Full name<input id="signupName" type="text" autocomplete="name" placeholder="Your full name" required></label>
-        
+        <label>Email address<input id="signupEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
         <label>Ghana phone number<input id="signupPhone" type="tel" autocomplete="tel" placeholder="024 XXX XXXX" required></label>
         <label>Password<input id="signupPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters" minlength="8" required></label>
         <label>Confirm password<input id="signupPassword2" type="password" autocomplete="new-password" placeholder="Enter your password again" minlength="8" required></label>
@@ -260,7 +262,7 @@
       </div>
       <div class="account-card">
         <div><span>Name</span><strong id="accountName">—</strong></div>
-        
+        <div><span>Email</span><strong id="accountEmail">—</strong></div>
         <div><span>Phone</span><strong id="accountPhone">—</strong></div>
       </div>
       <button class="btn btn-primary full" type="button" id="accountShopBtn">Continue shopping</button>
@@ -275,11 +277,12 @@
     <div class="checkout-header">
       <span class="eyebrow">SECURE CHECKOUT</span>
       <h2>Complete your order</h2>
-      <p>Your name, phone number and collection/delivery details are used to process your order.</p>
+      <p>Your details are used to process your PureGlow payment through Paystack.</p>
     </div>
     <div class="checkout-layout">
       <form id="checkoutForm" class="checkout-form">
         <label>Full name<input id="customerName" name="name" type="text" autocomplete="name" placeholder="Your full name" required></label>
+        <label>Email address<input id="customerEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
         <label>Phone number<input id="customerPhone" name="phone" type="tel" autocomplete="tel" placeholder="024 XXX XXXX" required></label>
         <fieldset class="delivery-options"><legend>Order fulfilment</legend>
           <label class="radio-row"><input type="radio" name="deliveryMethod" value="collection" checked><span><b>Collection</b><small>PureGlow Solutions, Kakumdo, Cape Coast</small></span></label>
@@ -310,7 +313,6 @@
 <script>
 const PAYSTACK_PUBLIC_KEY = "pk_live_30fbefd95814769ed3344919d15d4549afeb4d14";
 const API_BASE_URL = ''; // Render serves the frontend and /api/* from the same origin.
-const WHATSAPP_NUMBER = '233597601733'; // 0597601733
 const PRODUCTS = [
   {"id":"viora-dish-450-yellow","groupId":"dish-450","name":"Viora Dishwashing Liquid Soap","variant":"450ml","colorLabel":"Yellow","category":"Dishwashing","price":13,"image":"assets/dish-450-yellow.jpg"},
   {"id":"viora-dish-450-green","groupId":"dish-450","name":"Viora Dishwashing Liquid Soap","variant":"450ml","colorLabel":"Green","category":"Dishwashing","price":13,"image":"assets/hero-small.jpg"},
@@ -320,7 +322,7 @@ const PRODUCTS = [
   {"id":"viora-fabric-500-pink","groupId":"fabric-500","name":"Viora Fabric Softener","variant":"500ml","colorLabel":"Pink","category":"Fabric Care","price":20,"image":"assets/fabric-softener-solo-pink.jpg"},
   {"id":"viora-bleach-500","name":"Viora Thick Bleach","variant":"500ml","category":"Home Care","price":null,"image":"assets/bleach-500-solo.jpg"},
   {"id":"viora-bleach-1l","name":"Viora Thick Perfumed Bleach","variant":"1 Litre","category":"Home Care","price":20,"image":"assets/bleach-1l-solo.jpg"},
-  {"id":"viora-floor-5l","name":"Viora Floor Cleaner","variant":"5 Litres","category":"Home Care","price":null,"byOrder":true,"image":"assets/floor-cleaner-5l.jpg"}
+  {"id":"viora-floor-5l","name":"Viora Floor Cleaner","variant":"5 Litres","category":"Home Care","price":75,"image":"assets/floor-cleaner-5l.jpg"}
 ];
 let cart = JSON.parse(localStorage.getItem('pureglow-cart') || '[]');
 // Guard against a cart saved before a catalogue change (e.g. a product id
@@ -370,11 +372,9 @@ function renderProducts(){
         <p>${p.variant}${p.__showColor ? ' · ' + p.colorLabel : ''}</p>
         <div class="product-bottom">
           <strong>${money(p.price)}</strong>
-          ${p.byOrder
-            ? `<button class="add-btn" onclick="openOrderRequest('${p.id}')">Order</button>`
-            : p.price==null
-              ? `<button class="add-btn" disabled title="Price coming soon">Coming soon</button>`
-              : `<button class="add-btn" onclick="addToCart('${p.id}')">Add</button>`}
+          ${p.price==null
+            ? `<button class="add-btn" disabled title="Price coming soon">Coming soon</button>`
+            : `<button class="add-btn" onclick="addToCart('${p.id}')">Add</button>`}
         </div>
       </div>
     </article>`).join('');
@@ -441,65 +441,12 @@ function openCart(){ document.getElementById('cartDrawer').classList.add('open')
 function closeCart(){ document.getElementById('cartDrawer').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
 function openProduct(id){
   const p=PRODUCTS.find(x=>x.id===id);
-  const addBtn = p.byOrder
-    ? `<button class="btn btn-primary full" onclick="closeModal(); openOrderRequest('${p.id}');">Order this product on WhatsApp</button>`
-    : p.price==null
-      ? `<button class="btn btn-primary full" disabled>Price coming soon</button>`
-      : `<button class="btn btn-primary full" onclick="addToCart('${p.id}'); closeModal();">Add to cart</button>`;
+  const addBtn = p.price==null
+    ? `<button class="btn btn-primary full" disabled>Price coming soon</button>`
+    : `<button class="btn btn-primary full" onclick="addToCart('${p.id}'); closeModal();">Add to cart</button>`;
   document.getElementById('modalContent').innerHTML = `<div class="modal-image"><img src="${productImage(p)}" alt="${p.name}"></div><div class="modal-copy"><small>${p.category}</small><h2>${p.name}</h2><p class="variant">${p.variant}${p.colorLabel?' · '+p.colorLabel:''}</p><div class="modal-price">${money(p.price)}</div><p>Product details shown here are from the current PureGlow Solutions catalogue.</p>${addBtn}</div>`;
   document.getElementById('productModal').classList.add('show');
   document.getElementById('overlay').classList.add('show');
-}
-
-function openOrderRequest(id){
-  const p=PRODUCTS.find(x=>x.id===id);
-  if(!p) return;
-  document.getElementById('modalContent').innerHTML = `
-    <div class="modal-image"><img src="${productImage(p)}" alt="${p.name}"></div>
-    <div class="modal-copy">
-      <small>ORDER BY WHATSAPP</small><h2>${p.name}</h2>
-      <p class="variant">${p.variant}</p>
-      <p>This product is <b>by order</b>. Enter your details and choose collection or delivery. WhatsApp will open with the complete order message ready for you to tap <b>Send</b>.</p>
-      <label>Full name<input id="waOrderName" type="text" placeholder="Your full name" required></label>
-      <label>Phone / WhatsApp<input id="waOrderPhone" type="tel" placeholder="024 XXX XXXX" required></label>
-      <label>Quantity<input id="waOrderQty" type="number" min="1" value="1" required></label>
-      <fieldset class="delivery-options" style="margin-top:12px">
-        <legend>Order fulfilment</legend>
-        <label class="radio-row"><input type="radio" name="waFulfilment" value="Collection" checked><span><b>Collection</b><small>PureGlow Solutions, Kakumdo, Cape Coast</small></span></label>
-        <label class="radio-row"><input type="radio" name="waFulfilment" value="Cape Coast delivery"><span><b>Cape Coast delivery</b><small>Enter your delivery location below.</small></span></label>
-      </fieldset>
-      <div id="waDeliveryFields" class="delivery-fields" hidden>
-        <label>Delivery area<input id="waOrderArea" type="text" placeholder="e.g. Abura, Pedu, Kotokuraba"></label>
-        <label>Delivery address / location<input id="waOrderAddress" type="text" placeholder="House, street or location"></label>
-        <label>Landmark (optional)<input id="waOrderLandmark" type="text" placeholder="Nearby landmark"></label>
-        <label>Google Maps link (optional)<input id="waOrderMap" type="url" placeholder="Paste your Google Maps pin/link"></label>
-      </div>
-      <button class="btn btn-primary full" type="button" onclick="sendByOrderWhatsApp('${p.id}')">Continue to WhatsApp</button>
-    </div>`;
-  document.getElementById('productModal').classList.add('show');
-  document.getElementById('overlay').classList.add('show');
-  document.querySelectorAll('input[name="waFulfilment"]').forEach(x=>x.addEventListener('change',()=>{
-    document.getElementById('waDeliveryFields').hidden=x.value!=='Cape Coast delivery';
-  }));
-}
-function sendByOrderWhatsApp(id){
-  const p=PRODUCTS.find(x=>x.id===id);
-  const name=document.getElementById('waOrderName')?.value.trim();
-  const phone=document.getElementById('waOrderPhone')?.value.trim();
-  const qty=Math.max(1,parseInt(document.getElementById('waOrderQty')?.value,10)||1);
-  const fulfilment=document.querySelector('input[name="waFulfilment"]:checked')?.value || 'Collection';
-  const area=document.getElementById('waOrderArea')?.value.trim();
-  const address=document.getElementById('waOrderAddress')?.value.trim();
-  const landmark=document.getElementById('waOrderLandmark')?.value.trim();
-  const map=document.getElementById('waOrderMap')?.value.trim();
-  if(!name||!phone){showToast('Please enter your name and phone number.');return;}
-  if(fulfilment==='Cape Coast delivery' && (!area||!address)){showToast('Please enter your delivery area and address.');return;}
-  const where=fulfilment==='Collection'
-    ? 'Collection: PureGlow Solutions, Kakumdo, Cape Coast'
-    : `Delivery area: ${area}\nDelivery address: ${address}${landmark?`\nLandmark: ${landmark}`:''}${map?`\nGoogle Maps: ${map}`:''}`;
-  const message=`PUREGLOW SOLUTIONS — ORDER REQUEST\n\nCustomer: ${name}\nPhone/WhatsApp: ${phone}\n\nProduct: ${p.name} — ${p.variant}\nQuantity: ${qty}\nPrice: By order / please confirm\n\n${where}\n\nPlease confirm availability, price and fulfilment details.`;
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`,'_blank','noopener');
-  closeModal();
 }
 function closeModal(){ document.getElementById('productModal').classList.remove('show'); document.getElementById('overlay').classList.remove('show'); }
 function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1800); }
@@ -523,6 +470,18 @@ let lastPaymentResult = null;
 function paystackGross(net){
   if(net <= 0) return 0;
   return Math.round(((net / (1 - PAYSTACK_FEE_RATE)) + 0.01) * 100) / 100;
+}
+
+async function resendOrderEmail(){
+  if(!lastPaymentResult) return;
+  const btn=document.getElementById('resendEmailBtn'), note=document.getElementById('emailStatusNote');
+  if(btn){ btn.disabled=true; btn.textContent='Sending…'; }
+  try{
+    const r=await fetch('/api/orders/resend-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reference:lastPaymentResult.reference})});
+    const d=await r.json();
+    if(note) note.textContent = d.ok ? 'Confirmation email sent. Please check your inbox (and spam folder).' : 'We could not send the email right now. Your order is saved — please call or WhatsApp 0597601733.';
+  }catch(_e){ if(note) note.textContent='We could not send the email right now. Your order is saved — please call or WhatsApp 0597601733.'; }
+  if(btn){ btn.disabled=false; btn.textContent='Resend confirmation email'; }
 }
 
 function openCheckout(){
@@ -554,19 +513,20 @@ document.getElementById('checkoutForm').addEventListener('submit', async e=>{
   e.preventDefault();
   if(!cart.length){ closeCheckout(); showToast('Your cart is empty.'); return; }
   const name=document.getElementById('customerName').value.trim();
+  const email=document.getElementById('customerEmail').value.trim();
   const phone=document.getElementById('customerPhone').value.trim();
   const method=document.querySelector('input[name="deliveryMethod"]:checked')?.value || 'collection';
   const area=document.getElementById('deliveryArea').value.trim();
   const address=document.getElementById('deliveryAddress').value.trim();
   const landmark=document.getElementById('deliveryLandmark').value.trim();
   const mapLink=document.getElementById('deliveryMapLink').value.trim();
-  if(!name || !phone){ showToast('Please complete your name and phone number.'); return; }
+  if(!name || !email || !phone){ showToast('Please complete your details.'); return; }
   if(method==='cape-coast-delivery' && (!area || !address)){ showToast('Please enter your Cape Coast delivery area and address.'); return; }
 
   // Snapshot the order now, before the cart is cleared on payment success —
   // used by the confirmation screen.
   pendingOrder = {
-    name, phone, method, area, address, landmark, mapLink,
+    name, email, phone, method, area, address, landmark, mapLink,
     items: cart.map(item=>{
       const p=PRODUCTS.find(x=>x.id===item.id);
       return { name:p.name, variant:p.variant, colorLabel:p.colorLabel||'', qty:item.qty, price:p.price };
@@ -583,7 +543,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async e=>{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        name,phone,
+        name,email,phone,
         items:cart.map(item=>({id:item.id,quantity:item.qty})),
         delivery:{method, area, address, landmark, mapLink, collectionPoint: method==='collection' ? 'PureGlow Solutions, Kakumdo, Cape Coast' : ''}
       })
@@ -645,16 +605,6 @@ async function recoverPayment(reference){
   }catch(_e){}
 }
 
-function buildWhatsAppOrderMessage(result){
-  const md=result.metadata || {};
-  const items=Array.isArray(md.items) ? md.items : (pendingOrder?.items || []);
-  const itemLines=items.map(i=>`• ${i.name} — ${i.variant || ''}${i.colorLabel ? ` (${i.colorLabel})` : ''} × ${i.qty}${i.lineTotal != null ? ` — ${money(i.lineTotal)}` : ''}`).join('\n');
-  const delivery=/delivery/i.test(md.fulfilment_method || pendingOrder?.method || '');
-  const where=delivery
-    ? `Delivery area: ${md.delivery_area || pendingOrder?.area || ''}\nDelivery address: ${md.delivery_address || pendingOrder?.address || ''}${(md.delivery_landmark || pendingOrder?.landmark) ? `\nLandmark: ${md.delivery_landmark || pendingOrder?.landmark}` : ''}${(md.delivery_map_link || pendingOrder?.mapLink) ? `\nGoogle Maps: ${md.delivery_map_link || pendingOrder?.mapLink}` : ''}`
-    : 'Collection: PureGlow Solutions, Kakumdo, Cape Coast';
-  return `PUREGLOW SOLUTIONS — PAID ORDER\n\nCustomer: ${md.customer_name || pendingOrder?.name || ''}\nPhone/WhatsApp: ${md.customer_phone || pendingOrder?.phone || ''}\n\nORDERED ITEMS\n${itemLines}\n\nSubtotal: ${money(Number(md.subtotal || 0))}\nPayment fee: ${money(Number(md.fee || 0))}\nTOTAL PAID: ${money(Number(result.amount || 0)/100)}\nPayment reference: ${result.reference}\n\n${where}\n\nPayment has been completed through Paystack. Please confirm the order and fulfilment.`;
-}
 function showPaymentSuccess(result){
   lastPaymentResult = result;
   const modal=document.getElementById('checkoutModal');
@@ -662,14 +612,13 @@ function showPaymentSuccess(result){
   modal.setAttribute('aria-hidden','false');
   const panel=modal.querySelector('.checkout-panel');
   const safe=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const message=buildWhatsAppOrderMessage(result);
-  const waUrl=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  const email=safe(result.email || (pendingOrder&&pendingOrder.email));
+  const sent=result.emailStatus==='sent';
+  const msg=sent
+    ? `A confirmation with your order details has been sent to <b>${email}</b>. Please check your inbox (and spam folder).`
+    : `Your order is saved. We could not send the confirmation email to <b>${email}</b> yet — tap the button below to try again.`;
   if(panel){
-    panel.innerHTML=`<div class="checkout-header"><span class="eyebrow">PAYMENT CONFIRMED</span><h2>Thank you for your order.</h2><p>Your payment was confirmed by Paystack. Your order details are ready to send to PureGlow Solutions on WhatsApp.</p></div>
-      <div class="checkout-note" style="margin-top:18px"><span>✓</span><div><b>Payment successful</b><small>Reference: ${safe(result.reference)}</small><small>Amount: ${money(Number(result.amount||0)/100)}</small></div></div>
-      <div class="checkout-note" style="margin-top:14px"><span>💬</span><div><b>One final step</b><small>Tap the button below. WhatsApp will open with the complete order details. Review them and tap <b>Send</b> to send the order to PureGlow Solutions.</small></div></div>
-      <a class="btn btn-primary full" href="${waUrl}" target="_blank" rel="noopener" style="margin-top:14px">Open WhatsApp &amp; Send Order</a>
-      <button class="btn btn-light full" type="button" onclick="closeCheckout()" style="margin-top:10px">Continue shopping</button>`;
+    panel.innerHTML=`<div class="checkout-header"><span class="eyebrow">PAYMENT CONFIRMED</span><h2>Thank you for your order.</h2><p>Your payment was confirmed by Paystack.</p></div><div class="checkout-note" style="margin-top:18px"><span>✓</span><div><b>Payment successful</b><small>Reference: ${safe(result.reference)}</small><small>Amount: ${money(Number(result.amount||0)/100)}</small></div></div><p id="emailStatusNote" style="margin-top:14px;font-size:.92rem;">${msg}</p>${sent?'':'<button id="resendEmailBtn" class="btn btn-primary full" type="button" onclick="resendOrderEmail()" style="margin-top:10px;">Resend confirmation email</button>'}<button class="btn ${sent?'btn-primary':'btn-light'} full" type="button" onclick="closeCheckout()" style="margin-top:10px;">Continue shopping</button>`;
   }
 }
 
@@ -707,6 +656,7 @@ function showAccountDashboard(){
   setAccountView('dashboard');
   document.getElementById('accountWelcome').textContent = `Welcome, ${currentUser.name.split(' ')[0]}.`;
   document.getElementById('accountName').textContent = currentUser.name;
+  document.getElementById('accountEmail').textContent = currentUser.email;
   document.getElementById('accountPhone').textContent = currentUser.phone || '—';
 }
 function updateAccountButton(){
@@ -715,8 +665,10 @@ function updateAccountButton(){
 function prefillCheckout(){
   if(!currentUser) return;
   const name = document.getElementById('customerName');
+  const email = document.getElementById('customerEmail');
   const phone = document.getElementById('customerPhone');
   if(name && !name.value) name.value=currentUser.name;
+  if(email && !email.value) email.value=currentUser.email;
   if(phone && !phone.value) phone.value=currentUser.phone || '';
 }
 async function loadCurrentUser(){
@@ -743,7 +695,7 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
   const button=e.target.querySelector('button[type="submit"]');
   const original=button.textContent; button.disabled=true; button.textContent='Logging in…';
   try{
-    const response=await fetch('/api/auth?action=login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:document.getElementById('loginPhone').value,password:document.getElementById('loginPassword').value})});
+    const response=await fetch('/api/auth?action=login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('loginEmail').value,password:document.getElementById('loginPassword').value})});
     const data=await response.json();
     if(!response.ok) throw new Error(data.error||'Could not log in.');
     currentUser=data.user; updateAccountButton(); showAccountDashboard(); prefillCheckout(); showToast('Welcome back!');
@@ -760,7 +712,7 @@ document.getElementById('signupForm').addEventListener('submit', async e=>{
   const button=e.target.querySelector('button[type="submit"]');
   const original=button.textContent; button.disabled=true; button.textContent='Creating account…';
   try{
-    const response=await fetch('/api/auth?action=signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('signupName').value,phone:document.getElementById('signupPhone').value,password})});
+    const response=await fetch('/api/auth?action=signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('signupName').value,email:document.getElementById('signupEmail').value,phone:document.getElementById('signupPhone').value,password})});
     const data=await response.json();
     if(!response.ok) throw new Error(data.error||'Could not create your account.');
     currentUser=data.user; updateAccountButton(); showAccountDashboard(); prefillCheckout(); showToast('Account created successfully!');
@@ -815,6 +767,7 @@ renderCart();
     if(Date.now()-p.t<15*60*1000) monitorPayment(p.reference); else recoverPayment(p.reference);
   }catch(_e){}
 })();
+
 </script>
 </body>
 </html>
